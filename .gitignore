@@ -137,7 +137,13 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# Visual studio
+.vscode/
 
+ts_df1.csv
+ts_df2.csv
+ts_df3.csv
+ts_df4.csv
 .idea*
 data_comparison/
 data_download/

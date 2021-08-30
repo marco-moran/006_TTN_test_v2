@@ -7,10 +7,28 @@ import base64
 import numpy as np
 import matplotlib.pyplot as plt
 import configparser
+from sqlalchemy import create_engine
+import psycopg2
+
 
 # load file config.ini for setting enviroment variables
 config = configparser.ConfigParser()
 config.read('config.ini')
+
+
+# save dataframe into database sql
+def df_tosql(df):
+    engine = create_engine('postgresql+psycopg2://postgres:Drowssap11@localhost:5432/TTN')
+    df.to_sql(name='ttn', con=engine, if_exists='append')
+    con=psycopg2.connect(dbname="TTN", user="postgres", password="Drowssap11", port=5432)
+    cur = con.cursor()          
+    cur.execute("SELECT * FROM information_schema.table_constraints WHERE constraint_type = 'PRIMARY KEY' AND table_name = 'ttn'")
+    rows = cur.fetchall()
+    if len(rows) == 0:
+        cur.execute('ALTER TABLE ttn ADD PRIMARY KEY ("DateTime")')
+        con.commit()
+        con.close()
+    con.close()
 
 
 # for convert and save the dataframes output as .png
@@ -116,11 +134,13 @@ def mqtt_sub(broker, port, appid, passw):
             df = pd.read_csv(config['data_download']['path_output'] + name_file + '.csv', index_col='DateTime').drop(labels="Unnamed: 0", axis=1)
             df = df.sort_index()
             df.index = pd.to_datetime(df.index, infer_datetime_format=True)
-
+            
             describe_add(df=df, colname=config['variable_analyzed']['variable'], name_file=name_file)
             hist_box(df=df, colname=config['variable_analyzed']['variable'], name_file=name_file)
             top_v_range(df=df, colname=config['variable_analyzed']['variable'], name_file=name_file)
             plot_d(df=df, colname=config['variable_analyzed']['variable'], name_file=name_file)
+
+            df_tosql(df)
 
         elif '/up' in msg.topic:
             name_file = date + '_' + str(on_message.counter)
