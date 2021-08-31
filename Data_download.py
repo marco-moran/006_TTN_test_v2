@@ -18,9 +18,9 @@ config.read('config.ini')
 
 # save dataframe into database sql
 def df_tosql(df):
-    engine = create_engine('postgresql+psycopg2://postgres:Drowssap11@localhost:5432/TTN')
+    engine = create_engine('postgresql+psycopg2://' + config['data_to_psql']['user_psql'] + ':' + config['data_to_psql']['password_psql'] + '@' + config['data_to_psql']['host_psql'] + ':' + config['data_to_psql']['port_psql'] + '/' + config['data_to_psql']['database_name'])
     df.to_sql(name='ttn', con=engine, if_exists='append')
-    con=psycopg2.connect(dbname="TTN", user="postgres", password="Drowssap11", port=5432)
+    con=psycopg2.connect(dbname=config['data_to_psql']['database_name'], user=config['data_to_psql']['user_psql'], password=config['data_to_psql']['password_psql'], port=config['data_to_psql']['port_psql'])
     cur = con.cursor()          
     cur.execute("SELECT * FROM information_schema.table_constraints WHERE constraint_type = 'PRIMARY KEY' AND table_name = 'ttn'")
     rows = cur.fetchall()
