@@ -1,0 +1,1 @@
+LoRaWAN communication protocol and implementation of an IoT project via The Things Network platform
